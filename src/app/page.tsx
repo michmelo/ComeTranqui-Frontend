@@ -42,27 +42,44 @@ function Header() {
       }`}
     >
       <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <a href="#inicio" id="logo-link" className="flex items-center gap-3 group">
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-[#A46C54] flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300">
-              <span className="text-white text-xl leading-none">☺</span>
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <span
-              className="text-2xl font-extrabold tracking-tight"
-              style={{ fontFamily: "'Montserrat', sans-serif", color: "#563B2D" }}
-            >
-              COME
-            </span>
-            <span
-              className="text-2xl font-bold"
-              style={{ fontFamily: "'Dancing Script', cursive", color: "#A46C54" }}
-            >
-              tranqui
-            </span>
-          </div>
+        {/* Logo — fiel al diseño original */}
+        <a href="#inicio" id="logo-link" className="flex items-center group">
+          {/* C */}
+          <span
+            className="text-3xl leading-none"
+            style={{ fontFamily: "'TT Norms Pro', sans-serif", color: "#1a1a1a", fontWeight: 400, letterSpacing: "-0.01em" }}
+          >
+            C
+          </span>
+          {/* O con carita — carácter ツ dentro de círculo */}
+          <span
+            className="relative inline-flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+            style={{
+              width: "1.85rem",
+              height: "1.85rem",
+              border: "2px solid #1a1a1a",
+              borderRadius: "50%",
+              fontSize: "0.85rem",
+              color: "#1a1a1a",
+              lineHeight: 1,
+            }}
+          >
+            ツ
+          </span>
+          {/* ME */}
+          <span
+            className="text-3xl leading-none"
+            style={{ fontFamily: "'TT Norms Pro', sans-serif", color: "#1a1a1a", fontWeight: 400, letterSpacing: "-0.01em" }}
+          >
+            ME
+          </span>
+          {/* tranqui */}
+          <span
+            className="text-3xl ml-0.5 leading-none"
+            style={{ fontFamily: "'Bellaboo', cursive", color: "#1a1a1a", fontWeight: 400 }}
+          >
+            tranqui
+          </span>
         </a>
 
         {/* Nav desktop */}
@@ -212,7 +229,7 @@ function HeroSection() {
           Come lo que amas,
           <br />
           <span
-            style={{ fontFamily: "'Dancing Script', cursive", color: "#A46C54" }}
+            style={{ fontFamily: "'Bellaboo', cursive", color: "#A46C54" }}
             className="text-6xl md:text-8xl"
           >
             sin preocuparte
@@ -643,25 +660,41 @@ function Footer() {
         <div className="grid md:grid-cols-4 gap-10 mb-12 pb-12 border-b border-white/10">
           {/* Brand */}
           <div className="md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-full bg-[#A46C54] flex items-center justify-center">
-                <span className="text-white text-lg">☺</span>
-              </div>
-              <div>
-                <span
-                  className="text-xl font-extrabold text-white tracking-tight"
-                  style={{ fontFamily: "'Montserrat', sans-serif" }}
-                >
-                  COME
-                </span>
-                <span
-                  className="text-xl font-bold text-[#C3A69A]"
-                  style={{ fontFamily: "'Dancing Script', cursive" }}
-                >
-                  {" "}
-                  tranqui
-                </span>
-              </div>
+            {/* Logo footer */}
+            <div className="flex items-center mb-4 group">
+              <span
+                className="text-2xl leading-none"
+                style={{ fontFamily: "'TT Norms Pro', sans-serif", color: "white", fontWeight: 400, letterSpacing: "-0.01em" }}
+              >
+                C
+              </span>
+              {/* O con carita footer */}
+              <span
+                className="relative inline-flex items-center justify-center"
+                style={{
+                  width: "1.4rem",
+                  height: "1.4rem",
+                  border: "1.8px solid white",
+                  borderRadius: "50%",
+                  fontSize: "0.65rem",
+                  color: "white",
+                  lineHeight: 1,
+                }}
+              >
+                ツ
+              </span>
+              <span
+                className="text-2xl leading-none"
+                style={{ fontFamily: "'TT Norms Pro', sans-serif", color: "white", fontWeight: 400, letterSpacing: "-0.01em" }}
+              >
+                ME
+              </span>
+              <span
+                className="text-2xl ml-0.5 leading-none"
+                style={{ fontFamily: "'Bellaboo', cursive", color: "#C3A69A", fontWeight: 400 }}
+              >
+                tranqui
+              </span>
             </div>
             <p className="text-sm text-white/50 leading-relaxed mb-4">
               La plataforma para comer fuera de casa con total seguridad y

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Come Tranqui — Comé sin preocuparte",
+  title: "Come Tranqui — Come sin preocuparte",
   description:
     "Come Tranqui te ayuda a encontrar restaurantes y cafeterías seguros para tus restricciones alimentarias. Sin gluten, sin lactosa, APLV, vegano y más.",
   keywords: [
@@ -15,9 +15,9 @@ export const metadata: Metadata = {
     "come tranqui",
   ],
   openGraph: {
-    title: "Come Tranqui — Comé sin preocuparte",
+    title: "Come Tranqui — Come sin preocuparte",
     description:
-      "Encontrá restaurantes y cafeterías seguros para tu restricción alimentaria.",
+      "Encuentra restaurantes y cafeterías seguros para tu restricción alimentaria.",
     type: "website",
   },
 };
