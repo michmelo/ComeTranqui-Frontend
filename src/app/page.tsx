@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  loginUrl,
+  isLoggedIn,
+  clearAccessToken,
+  getUserProfile,
+  type UserProfile,
+} from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 
 // ────────────────────────────────────────────
 //  Tipos
@@ -14,17 +22,95 @@ type Restriccion =
   | "Vegetariano";
 
 // ────────────────────────────────────────────
+//  Menú de perfil (avatar circular + dropdown)
+// ────────────────────────────────────────────
+function ProfileMenu({
+  profile,
+  onLogout,
+}: {
+  profile: UserProfile | null;
+  onLogout: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClickOutside = () => setOpen(false);
+    document.addEventListener("click", onClickOutside);
+    return () => document.removeEventListener("click", onClickOutside);
+  }, [open]);
+
+  const initial = (profile?.name ?? profile?.email ?? "?").charAt(0).toUpperCase();
+
+  return (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        id="btn-profile"
+        onClick={() => setOpen((v) => !v)}
+        className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#C3A69A] hover:border-[#A46C54] transition-colors duration-200 flex items-center justify-center bg-[#A46C54] text-white font-bold"
+        aria-label="Menú de perfil"
+      >
+        {profile?.picture ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profile.picture}
+            alt={profile.name ?? "Perfil"}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <span>{initial}</span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-[#D1C9C5]/60 py-2 z-50">
+          <div className="px-4 py-2 border-b border-[#D1C9C5]/40">
+            <p className="text-sm font-semibold text-[#563B2D] truncate">
+              {profile?.name ?? "Usuario"}
+            </p>
+            <p className="text-xs text-[#563B2D]/50 truncate">
+              {profile?.email}
+            </p>
+          </div>
+          <button
+            id="btn-logout"
+            onClick={onLogout}
+            className="w-full text-left px-4 py-2 text-sm font-medium text-[#A46C54] hover:bg-[#FAF8F5] transition-colors duration-150"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────
 //  Header / Nav
 // ────────────────────────────────────────────
 function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
+    setLoggedIn(isLoggedIn());
+    setProfile(getUserProfile());
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleLogin = () => {
+    window.location.href = loginUrl();
+  };
+
+  const handleLogout = () => {
+    clearAccessToken();
+    window.location.href = "/";
+  };
 
   const navLinks = [
     { href: "#inicio", label: "Inicio" },
@@ -98,18 +184,17 @@ function Header() {
 
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <button
-            id="btn-login"
-            className="px-5 py-2 text-sm font-semibold text-[#563B2D] border border-[#C3A69A] rounded-full hover:bg-[#C3A69A]/20 transition-all duration-200"
-          >
-            Iniciar Sesión
-          </button>
-          <button
-            id="btn-registro"
-            className="px-5 py-2 text-sm font-semibold text-white bg-[#A46C54] rounded-full hover:bg-[#563B2D] shadow-md hover:shadow-lg transition-all duration-200"
-          >
-            Registrarse
-          </button>
+          {loggedIn ? (
+            <ProfileMenu profile={profile} onLogout={handleLogout} />
+          ) : (
+            <button
+              id="btn-login"
+              onClick={handleLogin}
+              className="px-5 py-2 text-sm font-semibold text-white bg-[#A46C54] rounded-full hover:bg-[#563B2D] shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              Iniciar Sesión con Google
+            </button>
+          )}
         </div>
 
         {/* Hamburger mobile */}
@@ -147,12 +232,36 @@ function Header() {
             </a>
           ))}
           <div className="flex gap-3 pt-2 border-t border-[#D1C9C5]/50">
-            <button className="flex-1 py-2 text-sm font-semibold text-[#563B2D] border border-[#C3A69A] rounded-full">
-              Iniciar Sesión
-            </button>
-            <button className="flex-1 py-2 text-sm font-semibold text-white bg-[#A46C54] rounded-full">
-              Registrarse
-            </button>
+            {loggedIn ? (
+              <div className="flex-1 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-[#C3A69A] flex items-center justify-center bg-[#A46C54] text-white text-sm font-bold shrink-0">
+                  {profile?.picture ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={profile.picture}
+                      alt={profile.name ?? "Perfil"}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span>{(profile?.name ?? profile?.email ?? "?").charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 py-2 text-sm font-semibold text-white bg-[#A46C54] rounded-full"
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleLogin}
+                className="flex-1 py-2 text-sm font-semibold text-white bg-[#A46C54] rounded-full"
+              >
+                Iniciar Sesión con Google
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -343,6 +452,69 @@ function HeroSection() {
           <div className="w-1 h-2 rounded-full bg-[#A46C54] animate-bounce" />
         </div>
       </div>
+    </section>
+  );
+}
+
+// ────────────────────────────────────────────
+//  Locales (protegido con JWT)
+// ────────────────────────────────────────────
+type Local = {
+  id: number;
+  nombre: string;
+  comuna: string;
+  restricciones: string[];
+  nivel: number;
+  nivelNombre: string;
+};
+
+function LocalesProtegidos() {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [locales, setLocales] = useState<Local[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoggedIn(isLoggedIn());
+  }, []);
+
+  useEffect(() => {
+    if (!loggedIn) return;
+    apiFetch("/user/locales")
+      .then((res) => {
+        if (!res.ok) throw new Error(String(res.status));
+        return res.json();
+      })
+      .then(setLocales)
+      .catch(() => setError("No se pudieron cargar los locales protegidos."));
+  }, [loggedIn]);
+
+  if (!loggedIn) return null;
+
+  return (
+    <section id="locales-protegidos" className="py-16 px-6 max-w-6xl mx-auto">
+      <h2 className="text-2xl font-bold text-[#563B2D] mb-6">
+        Locales verificados (datos protegidos por JWT)
+      </h2>
+      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {!error && !locales && (
+        <p className="text-[#563B2D]/60 text-sm">Cargando…</p>
+      )}
+      {locales && (
+        <div className="grid md:grid-cols-3 gap-4">
+          {locales.map((local) => (
+            <div
+              key={local.id}
+              className="rounded-2xl border border-[#D1C9C5] p-5 bg-white/70"
+            >
+              <p className="font-bold text-[#563B2D]">{local.nombre}</p>
+              <p className="text-sm text-[#563B2D]/60">{local.comuna}</p>
+              <p className="text-xs text-[#A46C54] mt-2">
+                {local.nivelNombre}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
@@ -647,10 +819,9 @@ function Footer() {
   };
 
   const team = [
-    "Melanie Ríos",
-    "Sebastián Torres",
-    "Valentina García",
-    "Nicolás López",
+    "Gabriela Huenchullán",
+    "Benjamín Andaur",
+    "Michelle Melo",
   ];
 
   return (
@@ -758,6 +929,7 @@ export default function HomePage() {
       <Header />
       <main className="flex-1">
         <HeroSection />
+        <LocalesProtegidos />
         <FeaturesSection />
         <SafetySection />
       </main>
