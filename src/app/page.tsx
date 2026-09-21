@@ -819,10 +819,9 @@ function Footer() {
   };
 
   const team = [
-    "Melanie Ríos",
-    "Sebastián Torres",
-    "Valentina García",
-    "Nicolás López",
+    "Gabriela Huenchullán",
+    "Benjamín Andaur",
+    "Michelle Melo",
   ];
 
   return (
