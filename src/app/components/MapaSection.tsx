@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import { useEffect, useRef, useState } from "react";
 import type { LayerGroup, Map as LeafletMap } from "leaflet";
 import { buscarLocales, RESTRICCIONES_CON_DATOS, type Local } from "@/lib/publico";
+import AvisoRespaldo from "./AvisoRespaldo";
 
 /** Colores de la sección "Niveles de seguridad". */
 const COLOR_NIVEL: Record<number, string> = { 1: "#2D7A4A", 2: "#A46C54", 3: "#8B6914" };
@@ -48,6 +49,7 @@ export default function MapaSection({
   const [soloExclusivos, setSoloExclusivos] = useState(false);
   const [locales, setLocales] = useState<Local[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [respaldo, setRespaldo] = useState<string | undefined>();
 
   // El buscador del hero cambia la restricción desde afuera (ajuste de estado durante el render)
   const [inicialPrevia, setInicialPrevia] = useState(restriccionInicial);
@@ -81,6 +83,7 @@ export default function MapaSection({
       .then((p) => {
         if (!vigente) return;
         setLocales(p.contenido);
+        setRespaldo(p.respaldo);
         setError(null);
       })
       .catch(() => vigente && setError("No pudimos cargar los locales."));
@@ -165,6 +168,7 @@ export default function MapaSection({
           </label>
         </div>
 
+        <AvisoRespaldo fecha={respaldo} />
         {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
         <div

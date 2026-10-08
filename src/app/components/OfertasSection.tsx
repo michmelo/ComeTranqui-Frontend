@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AvisoRespaldo from "./AvisoRespaldo";
 import {
   buscarOfertas,
   clp,
@@ -69,6 +70,7 @@ export default function OfertasSection({ restriccionInicial }: { restriccionInic
     pagina: number;
     total: number;
     error: string | null;
+    respaldo?: string;
   } | null>(null);
   const [cargandoMas, setCargandoMas] = useState(false);
 
@@ -89,7 +91,11 @@ export default function OfertasSection({ restriccionInicial }: { restriccionInic
   useEffect(() => {
     let vigente = true;
     buscarOfertas({ restriccion, supermercado: tienda, page: 0, size: TAMANO })
-      .then((p) => vigente && setResultado({ clave, ofertas: p.contenido, pagina: 0, total: p.totalElementos, error: null }))
+      .then(
+        (p) =>
+          vigente &&
+          setResultado({ clave, ofertas: p.contenido, pagina: 0, total: p.totalElementos, error: null, respaldo: p.respaldo })
+      )
       .catch(() =>
         vigente &&
         setResultado({ clave, ofertas: [], pagina: 0, total: 0, error: "No pudimos cargar las ofertas. Intenta de nuevo en unos minutos." })
@@ -172,6 +178,7 @@ export default function OfertasSection({ restriccionInicial }: { restriccionInic
             Aún no tenemos ofertas clasificadas como &quot;{restriccion}&quot;. Te mostramos todas las ofertas.
           </p>
         )}
+        <AvisoRespaldo fecha={vigente?.respaldo} />
         {error && <p className="mb-6 text-sm text-red-600">{error}</p>}
 
         {!error && ofertas.length === 0 && !cargando && (

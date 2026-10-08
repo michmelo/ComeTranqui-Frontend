@@ -9,7 +9,7 @@ import {
   type UserProfile,
 } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
-import { buscarLocales, buscarOfertas } from "@/lib/publico";
+import { buscarLocales, buscarOfertas, localesDeRespaldo } from "@/lib/publico";
 import OfertasSection from "./components/OfertasSection";
 import MapaSection from "./components/MapaSection";
 
@@ -483,7 +483,8 @@ function HeroSection({ onBuscar }: { onBuscar: (restriccion: string, comuna: str
 //  Locales (protegido con JWT)
 // ────────────────────────────────────────────
 type Local = {
-  id: number;
+  // number en los datos de ejemplo de EP1; string ("osm-node-…") en los locales reales
+  id: number | string;
   nombre: string;
   comuna: string;
   restricciones: string[];
@@ -502,12 +503,14 @@ function LocalesProtegidos() {
 
   useEffect(() => {
     if (!loggedIn) return;
-    apiFetch("/user/locales")
+    apiFetch("/user/locales", { signal: AbortSignal.timeout(6000) })
       .then((res) => {
         if (!res.ok) throw new Error(String(res.status));
         return res.json();
       })
       .then(setLocales)
+      // Backend apagado (Learner Lab): últimos locales publicados con el sitio
+      .catch(() => localesDeRespaldo().then(setLocales))
       .catch(() => setError("No se pudieron cargar los locales protegidos."));
   }, [loggedIn]);
 
