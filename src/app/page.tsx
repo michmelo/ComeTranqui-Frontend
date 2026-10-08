@@ -9,6 +9,9 @@ import {
   type UserProfile,
 } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { buscarLocales, buscarOfertas, localesDeRespaldo } from "@/lib/publico";
+import OfertasSection from "./components/OfertasSection";
+import MapaSection from "./components/MapaSection";
 
 // ────────────────────────────────────────────
 //  Tipos
@@ -272,9 +275,27 @@ function Header() {
 // ────────────────────────────────────────────
 //  Hero
 // ────────────────────────────────────────────
-function HeroSection() {
+function HeroSection({ onBuscar }: { onBuscar: (restriccion: string, comuna: string) => void }) {
   const [restriccion, setRestriccion] = useState<Restriccion>("");
   const [comuna, setComuna] = useState("");
+  const [totales, setTotales] = useState<{ locales: number | null; ofertas: number | null }>({
+    locales: null,
+    ofertas: null,
+  });
+
+  useEffect(() => {
+    buscarOfertas({ size: 1 })
+      .then((p) => setTotales((t) => ({ ...t, ofertas: p.totalElementos })))
+      .catch(() => {});
+    buscarLocales({})
+      .then((p) => setTotales((t) => ({ ...t, locales: p.totalElementos })))
+      .catch(() => {});
+  }, []);
+
+  const buscar = () => {
+    onBuscar(restriccion, comuna.trim());
+    document.getElementById("ofertas")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const restricciones: Restriccion[] = [
     "Sin Gluten",
@@ -391,6 +412,7 @@ function HeroSection() {
                 placeholder="Ej: Las Condes, Providencia..."
                 value={comuna}
                 onChange={(e) => setComuna(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && buscar()}
                 className="w-full px-4 py-3 rounded-xl bg-[#FAF8F5] border border-[#D1C9C5] text-[#563B2D] text-sm placeholder-[#D1C9C5] focus:outline-none focus:ring-2 focus:ring-[#A46C54]/30 focus:border-[#A46C54] transition-all"
               />
             </div>
@@ -399,6 +421,7 @@ function HeroSection() {
             <div className="flex items-end">
               <button
                 id="btn-buscar-hero"
+                onClick={buscar}
                 className="w-full md:w-auto px-8 py-3 bg-[#A46C54] text-white font-bold rounded-xl hover:bg-[#563B2D] shadow-lg hover:shadow-xl transition-all duration-300 text-sm whitespace-nowrap active:scale-95"
               >
                 🔍 Buscar
@@ -427,8 +450,8 @@ function HeroSection() {
         {/* Estadísticas rápidas */}
         <div className="flex flex-wrap justify-center gap-8 mt-12 animate-fade-in-up animate-delay-400">
           {[
-            { valor: "+200", label: "Locales seguros" },
-            { valor: "+500", label: "Ofertas activas" },
+            { valor: totales.locales ?? "—", label: "Locales mapeados" },
+            { valor: totales.ofertas ?? "—", label: "Ofertas activas" },
             { valor: "4", label: "Tipos de restricción" },
           ].map((stat) => (
             <div key={stat.label} className="text-center">
@@ -460,7 +483,8 @@ function HeroSection() {
 //  Locales (protegido con JWT)
 // ────────────────────────────────────────────
 type Local = {
-  id: number;
+  // number en los datos de ejemplo de EP1; string ("osm-node-…") en los locales reales
+  id: number | string;
   nombre: string;
   comuna: string;
   restricciones: string[];
@@ -479,12 +503,14 @@ function LocalesProtegidos() {
 
   useEffect(() => {
     if (!loggedIn) return;
-    apiFetch("/user/locales")
+    apiFetch("/user/locales", { signal: AbortSignal.timeout(6000) })
       .then((res) => {
         if (!res.ok) throw new Error(String(res.status));
         return res.json();
       })
       .then(setLocales)
+      // Backend apagado (Learner Lab): últimos locales publicados con el sitio
+      .catch(() => localesDeRespaldo().then(setLocales))
       .catch(() => setError("No se pudieron cargar los locales protegidos."));
   }, [loggedIn]);
 
@@ -559,7 +585,7 @@ function FeaturesSection() {
   ];
 
   return (
-    <section id="ofertas" className="py-24 px-6">
+    <section id="funcionalidades" className="py-24 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Encabezado */}
         <div className="text-center mb-16">
@@ -924,11 +950,16 @@ function Footer() {
 //  Page principal
 // ────────────────────────────────────────────
 export default function HomePage() {
+  // Lo que se busca en el hero filtra las ofertas y el mapa
+  const [filtro, setFiltro] = useState<{ restriccion?: string; comuna?: string }>({});
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1">
-        <HeroSection />
+        <HeroSection onBuscar={(restriccion, comuna) => setFiltro({ restriccion, comuna })} />
+        <OfertasSection restriccionInicial={filtro.restriccion} />
+        <MapaSection restriccionInicial={filtro.restriccion} comunaInicial={filtro.comuna} />
         <LocalesProtegidos />
         <FeaturesSection />
         <SafetySection />
